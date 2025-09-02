@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import * as Sentry from '@sentry/nextjs';
 import { RiskMatrix } from "@/components/risk-matrix"
 import { RiskFormDialog } from "@/components/risk-form-dialog"
 import { RiskDetailSheet } from "@/components/risk-detail-sheet"
@@ -63,6 +64,20 @@ export default function DashboardPage() {
     setEditingRisk(null)
   }
 
+
+  // Función para reportar un error de prueba a Sentry y mostrar el DSN en consola
+  const throwError = async () => {
+    try {
+      const Sentry = await import('@sentry/nextjs');
+      const error = new Error("¡Este es un error de prueba para Sentry!");
+      Sentry.captureException(error);
+      alert("Error de prueba enviado a Sentry");
+      console.log("Sentry DSN:", process.env.NEXT_PUBLIC_SENTRY_DSN);
+    } catch (e) {
+      console.error("Error al importar Sentry:", e);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -91,6 +106,12 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
+        {/* Botón para probar Sentry */}
+        <div className="mb-4">
+          <Button color="destructive" onClick={throwError}>
+            Generar error de prueba Sentry
+          </Button>
+        </div>
         <div className="space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

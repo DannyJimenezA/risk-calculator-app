@@ -1,0 +1,56 @@
+INTEGRACIÓN DE SENTRY EN NEXT.JS 15+
+
+1. Instalar Sentry:
+   npm install @sentry/nextjs@latest
+
+2. Configurar el DSN en .env.local:
+   NEXT_PUBLIC_SENTRY_DSN=https://<tu_dsn>@o<org>.ingest.<region>.sentry.io/<project_id>
+
+3. Crear archivos de instrumentación en la raíz del proyecto:
+
+instrumentation.ts (servidor):
+------------------------------
+import * as Sentry from '@sentry/nextjs';
+export const onRequestError = Sentry.captureRequestError;
+
+instrumentation-client.ts (cliente):
+------------------------------------
+import * as Sentry from '@sentry/nextjs';
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || '',
+  tracesSampleRate: 1.0,
+});
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+
+4. Configurar next.config.mjs:
+------------------------------
+import { withSentryConfig } from '@sentry/nextjs';
+const nextConfig = {
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+  images: { unoptimized: true },
+};
+const sentryWebpackPluginOptions = { silent: true };
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+
+5. Crear global-error.tsx en la raíz:
+-------------------------------------
+import * as Sentry from '@sentry/nextjs';
+export default function GlobalError({ error, reset }) {
+  Sentry.captureException(error);
+  return (
+    <html>
+      <body>
+        <h2>Ha ocurrido un error inesperado</h2>
+        <pre>{error.message}</pre>
+        <button onClick={() => reset()}>Reintentar</button>
+      </body>
+    </html>
+  );
+}
+
+6. Probar la integración:
+-------------------------
+- Reinicia el servidor.
+- Genera un error en el frontend (por ejemplo, usando un botón que haga Sentry.captureException).
+- Verifica en Network que se envía una solicitud a /envelope/ y revisa tu panel de Sentry.

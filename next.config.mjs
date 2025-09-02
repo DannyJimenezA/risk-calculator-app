@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -9,6 +11,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
-export default nextConfig
+const sentryWebpackPluginOptions = {
+  silent: true,
+};
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
